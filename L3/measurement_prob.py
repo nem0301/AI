@@ -120,7 +120,6 @@ p = p2
 w = []
 #insert code here!
 for i in range(N):
-    Z = p[i].sense()
     w.append(p[i].measurement_prob(Z))
 print w #Please print w for grading purposes.
 
