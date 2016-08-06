@@ -1,4 +1,5 @@
-ER INSTRUCTIONS
+# --------------
+# USER INSTRUCTIONS
 #
 # Now you will put everything together.
 #
