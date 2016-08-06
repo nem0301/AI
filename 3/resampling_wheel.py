@@ -94,19 +94,33 @@ class robot:
 #myrobot = myrobot.move(-pi/2, 10.0)
 #print myrobot.sense()
 
+
+def eval(r, p):
+    sum = 0.0;
+    for i in range(len(p)): # calculate mean error
+        dx = (p[i].x - r.x + (world_size/2.0)) % world_size - (world_size/2.0)
+        dy = (p[i].y - r.y + (world_size/2.0)) % world_size - (world_size/2.0)
+        err = sqrt(dx * dx + dy * dy)
+        sum += err
+    return sum / float(len(p))
+
 ####   DON'T MODIFY ANYTHING ABOVE HERE! ENTER CODE BELOW ####
 myrobot = robot()
 myrobot = myrobot.move(0.1, 5.0)
 Z = myrobot.sense()
 
 N = 1000
+T = 10
 p = []
 for i in range(N):
     x = robot()
     x.set_noise(0.05, 0.05, 5.0)
     p.append(x)
 
-for k in range(2):
+for k in range(T):
+    myrobot = myrobot.move(0.1, 5.0)
+    Z = myrobot.sense()
+
     p2 = []
     for i in range(N):
         p2.append(p[i].move(0.1, 5.0))
@@ -130,6 +144,8 @@ for k in range(2):
         p3.append(p[index])
 
     p = p3
-print p #please leave this print statement here for grading!
+    print (eval(myrobot, p))
+
+
 
 
