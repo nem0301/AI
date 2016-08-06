@@ -93,30 +93,44 @@ class robot:
     #   move along a section of a circular path according to motion
     #
     
-    def move(self, motion): # Do not change the name of this function
+    def move(self, motion, tolerance = 0.001): # Do not change the name of this function
 
         # ADD CODE HERE
         a = motion[0]
         d = motion[1]
-        b = ( d / self.length) * tan(a)
-        if b == 0:
-            R = d
-            cx = self.x
-            cy = self.y
-            self.x = cx + cos(self.orientation + b) * R
-            self.y = cy + sin(self.orientation + b) * R
-        else:
-            R = d / b
-            cx = self.x - sin(self.orientation) * R
-            cy = self.y + cos(self.orientation) * R
-            self.x = cx + sin(self.orientation + b) * R
-            self.y = cy - cos(self.orientation + b) * R
-        
 
-        self.orientation = (self.orientation + b) % (2 * pi)
-        result = self
+        if abs(a) > max_steering_angle:
+            raise ValueError, 'Exceeding max steering angle'
+
+        if d < 0.0:
+            raise ValueError, 'Moving backwards is not valid'
+
+        res = robot()
+        res.length = self.length
+        res.bearing_noise = self.bearing_noise
+        res.steering_noise = self.steering_noise
+        res.distance_noise = self.distance_noise
+
+        a2 = random.gauss(a, self.steering_noise)
+        d2 = random.gauss(d, self.distance_noise)
+
+        turn = tan(a2) * d2 / res.length
+
+
+        if abs(turn) < tolerance:
+            res.x = self.x + (d2 * cos(self.orientation))
+            res.y = self.y + (d2 * sin(self.orientation))
+            res.orientation = (self.orientation + turn) % (2.0 * pi)
+        else:
+            radius = d2 / turn
+            cx = self.x - (sin(self.orientation) * radius)
+            cy = self.y + (cos(self.orientation) * radius)
+            res.orientation = (self.orientation + turn) % (2.0 * pi)
+            res.x = cx + (sin(res.orientation) * radius)
+            res.y = cy - (cos(res.orientation) * radius)
         
-        return result # make sure your move function returns an instance
+        
+        return res # make sure your move function returns an instance
                       # of the robot class with the correct coordinates.
                       
     ############## ONLY ADD/MODIFY CODE ABOVE HERE ####################
