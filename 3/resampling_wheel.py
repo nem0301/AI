@@ -109,7 +109,7 @@ myrobot = robot()
 myrobot = myrobot.move(0.1, 5.0)
 Z = myrobot.sense()
 
-N = 1000
+N = 1
 T = 10
 p = []
 for i in range(N):
