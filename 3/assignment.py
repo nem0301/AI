@@ -96,6 +96,25 @@ class robot:
     def move(self, motion): # Do not change the name of this function
 
         # ADD CODE HERE
+        a = motion[0]
+        d = motion[1]
+        b = ( d / self.length) * tan(a)
+        if b == 0:
+            R = d
+            cx = self.x
+            cy = self.y
+            self.x = cx + cos(self.orientation + b) * R
+            self.y = cy + sin(self.orientation + b) * R
+        else:
+            R = d / b
+            cx = self.x - sin(self.orientation) * R
+            cy = self.y + cos(self.orientation) * R
+            self.x = cx + sin(self.orientation + b) * R
+            self.y = cy - cos(self.orientation + b) * R
+        
+
+        self.orientation = (self.orientation + b) % (2 * pi)
+        result = self
         
         return result # make sure your move function returns an instance
                       # of the robot class with the correct coordinates.
@@ -118,6 +137,8 @@ class robot:
 ##       Robot:     [x=39.034 y=7.1270 orient=0.2886]
 ##
 ##
+
+
 ##length = 20.
 ##bearing_noise  = 0.0
 ##steering_noise = 0.0
@@ -158,23 +179,23 @@ class robot:
 ##      Robot:     [x=83.736 y=46.485 orient=1.0135]
 ##
 ##
-##length = 20.
-##bearing_noise  = 0.0
-##steering_noise = 0.0
-##distance_noise = 0.0
-##
-##myrobot = robot(length)
-##myrobot.set(0.0, 0.0, 0.0)
-##myrobot.set_noise(bearing_noise, steering_noise, distance_noise)
-##
-##motions = [[0.2, 10.] for row in range(10)]
-##
-##T = len(motions)
-##
-##print 'Robot:    ', myrobot
-##for t in range(T):
-##    myrobot = myrobot.move(motions[t])
-##    print 'Robot:    ', myrobot
+length = 20.
+bearing_noise  = 0.0
+steering_noise = 0.0
+distance_noise = 0.0
+
+myrobot = robot(length)
+myrobot.set(0.0, 0.0, 0.0)
+myrobot.set_noise(bearing_noise, steering_noise, distance_noise)
+
+motions = [[0.2, 10.] for row in range(10)]
+
+T = len(motions)
+
+print 'Robot:    ', myrobot
+for t in range(T):
+    myrobot = myrobot.move(motions[t])
+    print 'Robot:    ', myrobot
 
 ## IMPORTANT: You may uncomment the test cases below to test your code.
 ## But when you submit this code, your test cases MUST be commented
