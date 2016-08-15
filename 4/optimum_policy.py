@@ -13,11 +13,17 @@
 # previous video. The goal cell should have '*'.
 # ----------
 
-grid = [[0, 1, 0, 0, 0, 0],
+grid_old = [[0, 1, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 0]]
+
+grid = [[0, 1, 0, 0, 0, 0],
+        [0, 1, 1, 0, 1, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 0],
+        [0, 1, 0, 1, 1, 0]]
 init = [0, 0]
 goal = [len(grid)-1, len(grid[0])-1]
 cost = 1 # the cost associated with moving from a cell to an adjacent one
@@ -34,6 +40,7 @@ def optimum_policy(grid,goal,cost):
     # modify code below
     # ----------------------------------------
     value = [[99 for row in range(len(grid[0]))] for col in range(len(grid))]
+    policy = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
     change = True
 
     while change:
@@ -59,5 +66,25 @@ def optimum_policy(grid,goal,cost):
                                 change = True
                                 value[x][y] = v2
 
+    for x in range(len(grid)):
+        for y in range(len(grid[0])):
+            if grid[x][y] != 1:
+                minval = 99
+                mindelta = ' '
+                for i, d in enumerate(delta):
+                    x2 = x + d[0]
+                    y2 = y + d[1]
+                    if x2 >= 0 and x2 < len(grid) and y2 >= 0 and y2 < len(grid[0]) and grid[x2][y2] == 0:
+                        if minval > value[x2][y2]:
+                            minval = value[x2][y2]
+                            mindelta = delta_name[i]
+                        
+                policy[x][y] = mindelta
+    
+    policy[goal[0]][goal[1]] = '*'
     return policy
 
+
+
+for p in optimum_policy(grid, goal, cost):
+    print(p)
