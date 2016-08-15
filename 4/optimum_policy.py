@@ -65,21 +65,8 @@ def optimum_policy(grid,goal,cost):
                             if v2 < value[x][y]:
                                 change = True
                                 value[x][y] = v2
+                                policy[x][y] = delta_name[a]
 
-    for x in range(len(grid)):
-        for y in range(len(grid[0])):
-            if grid[x][y] != 1:
-                minval = 99
-                mindelta = ' '
-                for i, d in enumerate(delta):
-                    x2 = x + d[0]
-                    y2 = y + d[1]
-                    if x2 >= 0 and x2 < len(grid) and y2 >= 0 and y2 < len(grid[0]) and grid[x2][y2] == 0:
-                        if minval > value[x2][y2]:
-                            minval = value[x2][y2]
-                            mindelta = delta_name[i]
-                        
-                policy[x][y] = mindelta
     
     policy[goal[0]][goal[1]] = '*'
     return policy
