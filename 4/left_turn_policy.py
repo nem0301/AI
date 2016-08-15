@@ -59,5 +59,64 @@ cost = [2, 1, 20] # cost has 3 values, corresponding to making
 
 def optimum_policy2D(grid,init,goal,cost):
 
+    value = [[[999 for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[999 for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[999 for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[999 for row in range(len(grid[0]))] for col in range(len(grid))]]
+    
+    policy = [[[' ' for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[' ' for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[' ' for row in range(len(grid[0]))] for col in range(len(grid))],
+             [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]]
+
+    policy2D = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
+    
+
+    change = True
+    while change:
+        change = False
+
+        for orient in range(4):
+            for x in range(len(grid)):
+                for y in range(len(grid[0])):
+                    if goal[0] == x and goal[1] == y:
+                        if value[orient][x][y] > 0:
+                            change = True
+                            value[orient][x][y] = 0
+                            policy[orient][x][y] = '*'
+                    elif grid[x][y] == 0:
+                        for i in range(3):
+                            o2 = (orient + action[i]) % 4
+                            x2 = x + forward[o2][0]
+                            y2 = y + forward[o2][1]
+
+                            if x2 >= 0 and x2 < len(grid) and y2 >= 0 and y2 < len(grid[0]) and grid[x2][y2] == 0:
+                                v2 = value[o2][x2][y2] + cost[i]
+                                if v2 < value[orient][x][y]:
+                                    change = True
+                                    value[orient][x][y] = v2
+                                    policy[orient][x][y] = action_name[i]
+    
+    
+    x = init[0]
+    y = init[1]
+    orient = init[2]
+    policy2D[x][y] = policy[orient][x][y]
+    while policy[orient][x][y] != '*':
+        if policy[orient][x][y] == '#':
+            o2 = orient
+        elif policy[orient][x][y] == 'R':
+            o2 = (orient - 1) % 4
+        elif policy[orient][x][y] == 'L':
+            o2 = (orient + 1) % 4
+
+        x = x + forward[o2][0]
+        y = y + forward[o2][1]
+        orient = o2
+        policy2D[x][y] = policy[orient][x][y]
+
+
     return policy2D
 
+for p in optimum_policy2D(grid, init, goal, cost):
+    print (p)
