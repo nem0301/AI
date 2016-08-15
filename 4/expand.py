@@ -1,4 +1,5 @@
-er Instructions:
+# -----------
+# User Instructions:
 # 
 # Modify the function search so that it returns
 # a table of values called expand. This table
