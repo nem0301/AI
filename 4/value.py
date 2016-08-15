@@ -28,8 +28,33 @@ def compute_value(grid,goal,cost):
     # ----------------------------------------
     # insert code below
     # ----------------------------------------
+    value = [[99 for col in range(len(grid[0]))] for row in range(len(grid))] 
+    
+    x = goal[0]
+    y = goal[1]
+    value[x][y] = 0
+
+    open = [[0, x, y]]
+
+    while len(open) != 0:
+        next = open.pop()
+        x = next[1]
+        y = next[2]
+        value[x][y] = next[0]
+        
+        for i in range(len(delta)):
+            x2 = x + delta[i][0]
+            y2 = y + delta[i][1]
+            if x2 >= 0 and x2 < len(grid) and y2 >=0 and y2 < len(grid[0]):
+                if value[x2][y2] > value[x][y] + 1 and grid[x2][y2] != 1:
+                    value[x2][y2] = value[x][y] + 1
+                    open.append([value[x2][y2], x2, y2])
+
     
     # make sure your function returns a grid of values as 
     # demonstrated in the previous video.
     return value 
 
+
+for p in compute_value(grid, goal, cost):
+    print (p)
