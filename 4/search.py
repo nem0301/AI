@@ -35,7 +35,33 @@ def search(grid,init,goal,cost):
     # ----------------------------------------
     # insert code here
     # ----------------------------------------
+    temp = []
+    for g in grid:
+        temp.append(g[:])
+    temp[init[0]][init[1]] = 1
+    if init == goal:
+        return [cost, init[0], init[1]]
 
+    isStuck = 1
+    result = []
+    for d in delta:
+        if (init[0] + d[0] >= 0 and init[0] + d[0] < len(grid) and
+            init[1] + d[1] >= 0 and init[1] + d[1] < len(grid[0])):
+            coord = [init[0] + d[0], init[1] + d[1]]
+            if (grid[coord[0]][coord[1]] == 0):
+                isStuck = 0
+                result.append(search(temp, coord, goal, cost + 1))
 
+    if isStuck:
+        return 'fail'
+    minval = None
+    path = 'fail'
+    for r in result:
+        if r != 'fail' and (minval == None or r[0] < minval):
+            minval = r[0]
+            path = r
+        
     return path
 
+
+print (search(grid, init, goal, 0))
