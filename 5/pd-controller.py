@@ -143,6 +143,13 @@ def run(param1, param2):
     #
     # Enter code here
     #
+	
+    prev_cte = myrobot.y
+    for i in range (N):
+        new_steering = -param1 * myrobot.y - param2 * (myrobot.y - prev_cte)
+        prev_cte = myrobot.y
+        myrobot = myrobot.move(new_steering, speed)
+        print(myrobot)
 
 # Call your function with parameters of 0.2 and 3.0 and print results
 run(0.2, 3.0)
