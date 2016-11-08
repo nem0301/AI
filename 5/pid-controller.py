@@ -146,8 +146,11 @@ def run(param1, param2, param3):
     #
 	
     prev_cte = myrobot.y
+    integ = 0
     for i in range (N):
+        integ += myrobot.y
         new_steering = -param1 * myrobot.y - param2 * (myrobot.y - prev_cte)
+        new_steering -= param3 * integ
         prev_cte = myrobot.y
         myrobot = myrobot.move(new_steering, speed)
         print(myrobot)
