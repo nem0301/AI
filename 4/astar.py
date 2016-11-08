@@ -13,6 +13,7 @@
 # the function should return the string 'fail'
 # ----------
 
+
 grid = [[0, 1, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
