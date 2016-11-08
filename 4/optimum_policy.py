@@ -72,6 +72,5 @@ def optimum_policy(grid,goal,cost):
     return policy
 
 
-
 for p in optimum_policy(grid, goal, cost):
     print(p)
