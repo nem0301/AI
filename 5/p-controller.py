@@ -146,6 +146,12 @@ def run(param):
     #
     # Add Code Here
     # 
+    
+    for i in range (N):
+        new_steering = -param * myrobot.y
+        myrobot = myrobot.move(new_steering, speed)
+        print(myrobot)
+
 
 run(0.1) # call function with parameter tau of 0.1 and print results
 
