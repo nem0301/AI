@@ -136,6 +136,11 @@ class robot:
 
 
 ############## ONLY ADD / MODIFY CODE BELOW THIS LINE ####################
+
+    def distance(self, p1, p2):
+        return sqrt(pow(p2[0] - p1[0], 2) + pow(p2[1] - p1[1], 2))
+        
+
    
     def cte(self, radius):
         # 
@@ -143,6 +148,26 @@ class robot:
         # Add code here
         #
         #            
+        cte = 0
+        x = self.x
+        y = self.y
+        p0 = [x, y]
+        
+        p1 = [radius, radius]
+        p2 = [radius * 3, radius]
+
+        
+        if x < radius:
+            cte = self.distance(p0, p1) - radius
+        elif x > 3.0 * radius :
+            cte = self.distance(p0, p2) - radius
+        elif y > radius:
+            cte = y - 2.0 * radius
+        else:
+            cte = -y
+        
+
+
         return cte
     
 ############## ONLY ADD / MODIFY CODE ABOVE THIS LINE ####################
