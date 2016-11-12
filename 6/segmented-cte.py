@@ -1,4 +1,5 @@
-er Instructions
+#-----------------
+# User Instructions
 #
 # Familiarize yourself with the code below. Most of it
 # reproduces results that you have obtained at some
@@ -489,6 +490,18 @@ def run(grid, goal, spath, params, printflag = False, speed = 0.1, timeout = 100
         estimate = filter.get_position()
 
         ### ENTER CODE HERE
+        dx = spath[index + 1][0] - spath[index][0]
+        dy = spath[index + 1][1] - spath[index][1]
+        rx = myrobot.x - spath[index][0]
+        ry = myrobot.y - spath[index][1]
+        
+        u = (rx * dx + ry * dy) / (dx ** 2 + dy ** 2)
+        if u > 1:
+            index += 1
+            continue
+
+        cte = (ry * dx - rx * dy) / (dx ** 2 + dy ** 2)
+
         
 
         # ----------------------------------------
