@@ -509,83 +509,48 @@ def slam(data, N, num_landmarks, motion_noise, measurement_noise):
     # Add your code here!
     #
     #
-    l = (N + num_landmarks)
     
-    OmegaX = matrix([[]])
-    OmegaX.zero(l, l)
-    XiX = matrix([[]])
-    XiX.zero(l, 1)
-    OmegaX.value[0][0] = 1.
-    XiX.value[0][0] = 50.
+    dim = 2 * (N + num_landmarks)
 
+    Omega = matrix()
+    Omega.zero(dim, dim)
+    Omega.value[0][0] = 1.
+    Omega.value[1][1] = 1.
 
-    OmegaY = matrix([[]])
-    OmegaY.zero(l, l)
-    XiY = matrix([[]])
-    XiY.zero(l, 1)
-    OmegaY.value[0][0] = 1.
-    XiY.value[0][0] = 50.
-
-    for k, d in enumerate(data):
-        i = k
-        Z = d[0]
-        x = d[1][0] * motion_noise
-        y = d[1][1] * motion_noise
-
-        moveO = 1. * motion_noise
-        tmp = matrix([[moveO, -moveO],
-                      [-moveO, moveO]])
-
-        tmp = tmp.expand(l, l, [i, i+1], [])
-        OmegaX += tmp
-        OmegaY += tmp
-        tmp = matrix([[-x], [x]])
-        tmp = tmp.expand(l, 1, [i, i+1], [0])
-        XiX += tmp
-        tmp = matrix([[-y], [y]])
-        tmp = tmp.expand(l, 1, [i, i+1], [0])
-        XiY += tmp
-
-        for z in Z:
-            landmark = (z[0] + N)
-            x = z[1] * measurement_noise
-            y = z[2] * measurement_noise
-
-            measureO = 1. * measurement_noise
-            tmp = matrix([[measureO, -measureO],
-                          [-measureO, measureO]])
-            tmp = tmp.expand(l, l, [i, landmark], [])
-            OmegaX += tmp
-            OmegaY += tmp
-
-            tmp = matrix([[-x], [x]])
-            tmp = tmp.expand(l, 1, [i, landmark], [0])
-            XiX += tmp
-
-            tmp = matrix([[-y], [y]])
-            tmp = tmp.expand(l, 1, [i, landmark], [0])
-            XiY += tmp
+    Xi = matrix()
+    Xi.zero(dim, 1)
+    Xi.value[0][0] = world_size / 2.
+    Xi.value[1][0] = world_size / 2.
     
-
-    OmegaX = OmegaX.inverse()
-    muX = OmegaX * XiX
-
-    OmegaY = OmegaY.inverse()
-    muY = OmegaY * XiY
-
-    tmp = []
-    dx = (muX.value[0][0] - 50.)
-    dy = (muY.value[0][0] - 50.)
-
-    for i in range(len(muX.value)):
-        tmp.append(muX.value[i][0] - dx)
-        tmp.append(muY.value[i][0] - dy)
     
-    mu = matrix([tmp])
-    
-    mu = mu.transpose()
+    for k in range(len(data)):
+        n = k * 2
+        measurement = data[k][0] 
+        motion = data[k][1]         # motion's [x, y]
+        
+        for i in range(len(measurement)):   
+            m = 2 * (N + measurement[i][0])
 
-    return mu # Make sure you return mu for grading!
+            # b is Z's x and y
+            for b in range(2):
+                Omega.value[n+b][n+b] += 1.0 / measurement_noise
+                Omega.value[m+b][m+b] += 1.0 / measurement_noise
+                Omega.value[n+b][m+b] -= 1.0 / measurement_noise
+                Omega.value[m+b][n+b] -= 1.0 / measurement_noise
+                Xi.value[n+b][0] -= measurement[i][1 + b] / measurement_noise
+                Xi.value[m+b][0] += measurement[i][1 + b] / measurement_noise
+
+        for b in range(4):
+            Omega.value[n+b][n+b] += 1.0 / motion_noise
+        for b in range(2):
+            Omega.value[n+b][n+b+2] -= 1.0 / motion_noise
+            Omega.value[n+b+2][n+b] -= 1.0 / motion_noise
+            Xi.value[n+b][0] -= motion[b] / motion_noise
+            Xi.value[n+b][0] += motion[b] / motion_noise
+    
+    mu = Omega.inverse() * Xi            
+
+    return mu # Make sure you return mu for grading
         
 ############### ENTER YOUR CODE ABOVE HERE ###################
 
