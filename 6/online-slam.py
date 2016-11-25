@@ -566,6 +566,7 @@ def online_slam(data, N, num_landmarks, motion_noise, measurement_noise):
     # Enter your code here!
     #
     #
+
     # Set the dimension of the filter
     dim = 2 * (1 + num_landmarks) 
 
@@ -741,8 +742,8 @@ answer_omega1      = matrix([[0.36603773584905663, 0.0, -0.169811320754717, 0.0,
                              [-0.1811320754716981, 0.0, -0.4056603773584906, 0.0, -0.360377358490566, 0.0, 1.2339622641509433, 0.0],
                              [0.0, -0.1811320754716981, 0.0, -0.4056603773584906, 0.0, -0.360377358490566, 0.0, 1.2339622641509433]])
 
-#result = online_slam(testdata1, 5, 3, 2.0, 2.0)
-#solution_check(result, answer_mu1, answer_omega1)
+result = online_slam(testdata1, 5, 3, 2.0, 2.0)
+solution_check(result, answer_mu1, answer_omega1)
 
 
 # -----------

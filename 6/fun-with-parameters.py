@@ -126,8 +126,7 @@ class plan:
                 for i in range(len(delta)):
                     x2 = x + delta[i][0]
                     y2 = y + delta[i][1]
-                    if x2 >= 0 and x2 < len(self.grid) and y2 >= 0 \
-                            and y2 < len(self.grid[0]):
+                    if x2 >= 0 and x2 < len(self.grid) and y2 >= 0 and y2 < len(self.grid[0]):
                         if closed[x2][y2] == 0 and self.grid[x2][y2] == 0:
                             g2 = g + self.cost
                             h2 = self.heuristic[x2][y2]
