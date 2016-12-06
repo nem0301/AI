@@ -58,6 +58,7 @@ from robot import *
 from math import *
 from matrix import *
 import random
+import sys
 
 
 # This is the function you have to write. The argument 'measurement' is a 
@@ -73,11 +74,74 @@ def estimate_next_pos(measurement, OTHER = None):
     # You must return xy_estimate (x, y), and OTHER (even if it is None) 
     # in this order for grading purposes.
     
-    if not OTHER:
-        OTHER = measurement
+    if OTHER == None:
+        xy_estimate = measurement
+        OTHER = [xy_estimate, [measurement]]
+    else :
+        estimate = OTHER[0]
+        measure = OTHER[1]
+
+        
     
-   
+        l = len(measure)
+
+        if l > 3:
+            sumRadian = 0.0
+            """
+            for i in range(1, len(measure) - 1):
+                x1 = measure[i][0] - measure[i-1][0]
+                y1 = measure[i][1] - measure[i-1][1]
+                x2 = measure[i+1][0] - measure[i][0]
+                y2 = measure[i+1][1] - measure[i][1]
+            """
+            #x1 = measure[l-2][0] - measure[l-3][0]
+            #y1 = measure[l-2][1] - measure[l-3][1]
+            x1 = measure[l-1][0] - measure[l-2][0]
+            y1 = measure[l-1][1] - measure[l-2][1]
+            x2 = measurement[0] - measure[l-1][0]
+            y2 = measurement[1] - measure[l-1][1]
+            x3 = estimate[0] - measure[l-1][0]
+            y3 = estimate[1] - measure[l-1][1]
+
+            radian = btwAngle([x1, y1], [x2, y2])
+            radian2 = btwAngle([x2, y2], [x3, y3])
+            delta = (degrees(radian) - degrees(radian2))
+
+            if delta > 0:
+                radian = radians(degrees(radian) + delta)
+            else:
+                radian = radians(degrees(radian) + delta)
+            #sumRadian += radian
+            dist = distance_between(measurement, measure[l-1])
+            
+            #radian = sumRadian / ( len(measure) )
+            delim = sqrt( x2 ** 2.0 + y2 ** 2.0)
+            x = x2 / delim
+            y = y2 / delim
+            
+            px = x * cos(radian) - y * sin(radian)
+            py = x * sin(radian) + y * cos(radian)
+
+            x = measurement[0] + px * dist
+            y = measurement[1] + py * dist
+        else:
+            x = measurement[0] 
+            y = measurement[1] 
+
+        xy_estimate = [x, y]
+        measure.append(measurement)
+        OTHER = [xy_estimate, measure]
+
     return xy_estimate, OTHER 
+
+def btwAngle(point1, point2):
+    x1 = point1[0]
+    y1 = point1[1]
+    x2 = point2[0]
+    y2 = point2[1]
+
+    return atan2(y2, x1) - atan2(y1, x1)
+
 
 # A helper function you may find useful.
 def distance_between(point1, point2):
@@ -136,12 +200,12 @@ def demo_grading_gui(estimate_next_pos_fcn, target_bot, OTHER = None):
     prediction.shape('arrow')
     prediction.color('blue')
     prediction.resizemode('user')
-    prediction.shapesize(0.1, 0.1, 0.1)
+    prediction.shapesize(0.2, 0.2, 0.2)
     prediction.penup()
     broken_robot.penup()
     measured_broken_robot.penup()
     #End of Visualization
-    while not localized and ctr <= 10:
+    while not localized and ctr <= 90:
         ctr += 1
         measurement = target_bot.sense()
         position_guess, OTHER = estimate_next_pos_fcn(measurement, OTHER)
@@ -150,7 +214,7 @@ def demo_grading_gui(estimate_next_pos_fcn, target_bot, OTHER = None):
         error = distance_between(position_guess, true_position)
         if error <= distance_tolerance:
             print "You got it right! It took you ", ctr, " steps to localize."
-            localized = True
+            #localized = True
         if ctr == 10:
             print "Sorry, it took you too many steps to localize the target."
         #More Visualization
@@ -181,5 +245,9 @@ def naive_next_pos(measurement, OTHER = None):
 test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
 test_target.set_noise(0.0, 0.0, 0.0)
 
-demo_grading(estimate_next_pos, test_target)
+if len(sys.argv) == 2 and sys.argv[1] == "1":
+    demo_grading_gui(estimate_next_pos, test_target)
+else :
+    demo_grading(estimate_next_pos, test_target)
+
 
