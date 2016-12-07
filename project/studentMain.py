@@ -67,70 +67,71 @@ import sys
 # next position. The OTHER variable that your function returns will be 
 # passed back to your function the next time it is called. You can use
 # this to keep track of important information over time.
+
+X = matrix([[0.], [0.], [0.], [0.]]) # initial state (location and velocity)
+# initial uncertainty
+P = matrix([[1000., 0., 0., 0.], 
+            [0., 1000., 0., 0.],
+            [0., 0., 1000., 0.],
+            [0., 0., 0., 1000.]
+            ]) 
+u = matrix([[0.], [0.], [0.], [0.]]) # external motion
+# next state function
+dt = 0.1
+F = matrix([[1., 0., dt, 0.], 
+            [0., 1., 0., dt],
+            [0., 0., 1., 0.],
+            [0., 0., 0., 1.],
+            ]) 
+H = matrix([[1., 0., 0., 0.],
+            [0., 1., 0., 0.]]) # measurement function
+R = matrix([[1., 0.],
+            [0., 1.]]) # measurement uncertainty
+# identity matrix
+I = matrix([[1., 0., 0., 0.], 
+            [0., 1., 0., 0.],
+            [0., 0., 1., 0.],
+            [0., 0., 0., 1.]])
+
+
 def estimate_next_pos(measurement, OTHER = None):
     """Estimate the next (x, y) position of the wandering Traxbot
     based on noisy (x, y) measurements."""
+    global X
+    global P
 
     # You must return xy_estimate (x, y), and OTHER (even if it is None) 
     # in this order for grading purposes.
     
     if OTHER == None:
         xy_estimate = measurement
-        OTHER = [xy_estimate, [measurement]]
+        OTHER = measurement
     else :
-        estimate = OTHER[0]
-        measure = OTHER[1]
+        Z = matrix([[measurement[0]], [measurement[1]]])
+        y = Z - (H * X)
+        S = H * P * H.transpose() + R 
+        K = P * H.transpose() * S.inverse()
+        X = X + (K * y)
 
+        P = (I - (K* H)) * P 
+
+        # prediction
+        X = (F * X) + u 
+        P = F * P * F.transpose()
+        X.show()
+              
+        dist = distance_between(measurement, OTHER)
+
+        x = X.value[0][0]
+        y = X.value[1][0]
         
-    
-        l = len(measure)
-
-        if l > 3:
-            sumRadian = 0.0
-            """
-            for i in range(1, len(measure) - 1):
-                x1 = measure[i][0] - measure[i-1][0]
-                y1 = measure[i][1] - measure[i-1][1]
-                x2 = measure[i+1][0] - measure[i][0]
-                y2 = measure[i+1][1] - measure[i][1]
-            """
-            #x1 = measure[l-2][0] - measure[l-3][0]
-            #y1 = measure[l-2][1] - measure[l-3][1]
-            x1 = measure[l-1][0] - measure[l-2][0]
-            y1 = measure[l-1][1] - measure[l-2][1]
-            x2 = measurement[0] - measure[l-1][0]
-            y2 = measurement[1] - measure[l-1][1]
-            x3 = estimate[0] - measure[l-1][0]
-            y3 = estimate[1] - measure[l-1][1]
-
-            radian = btwAngle([x1, y1], [x2, y2])
-            radian2 = btwAngle([x2, y2], [x3, y3])
-            delta = (degrees(radian) - degrees(radian2))
-
-            if delta > 0:
-                radian = radians(degrees(radian) + delta)
-            else:
-                radian = radians(degrees(radian) + delta)
-            #sumRadian += radian
-            dist = distance_between(measurement, measure[l-1])
-            
-            #radian = sumRadian / ( len(measure) )
-            delim = sqrt( x2 ** 2.0 + y2 ** 2.0)
-            x = x2 / delim
-            y = y2 / delim
-            
-            px = x * cos(radian) - y * sin(radian)
-            py = x * sin(radian) + y * cos(radian)
-
-            x = measurement[0] + px * dist
-            y = measurement[1] + py * dist
-        else:
-            x = measurement[0] 
-            y = measurement[1] 
-
+        delim = sqrt(x ** 2 + y ** 2)
+        x = x / delim * dist + measurement[0]
+        y = y / delim * dist + measurement[1]
+        
+        
         xy_estimate = [x, y]
-        measure.append(measurement)
-        OTHER = [xy_estimate, measure]
+        OTHER = measurement
 
     return xy_estimate, OTHER 
 
@@ -160,7 +161,7 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
     # if you haven't localized the target bot, make a guess about the next
     # position, then we move the bot and compare your guess to the true
     # next position. When you are close enough, we stop checking.
-    while not localized and ctr <= 10: 
+    while not localized and ctr <= 30: 
         ctr += 1
         measurement = target_bot.sense()
         position_guess, OTHER = estimate_next_pos_fcn(measurement, OTHER)
