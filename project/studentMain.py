@@ -68,70 +68,38 @@ import sys
 # passed back to your function the next time it is called. You can use
 # this to keep track of important information over time.
 
-X = matrix([[0.], [0.], [0.], [0.]]) # initial state (location and velocity)
-# initial uncertainty
-P = matrix([[1000., 0., 0., 0.], 
-            [0., 1000., 0., 0.],
-            [0., 0., 1000., 0.],
-            [0., 0., 0., 1000.]
-            ]) 
-u = matrix([[0.], [0.], [0.], [0.]]) # external motion
-# next state function
-dt = 0.1
-F = matrix([[1., 0., dt, 0.], 
-            [0., 1., 0., dt],
-            [0., 0., 1., 0.],
-            [0., 0., 0., 1.],
-            ]) 
-H = matrix([[1., 0., 0., 0.],
-            [0., 1., 0., 0.]]) # measurement function
-R = matrix([[1., 0.],
-            [0., 1.]]) # measurement uncertainty
-# identity matrix
-I = matrix([[1., 0., 0., 0.], 
-            [0., 1., 0., 0.],
-            [0., 0., 1., 0.],
-            [0., 0., 0., 1.]])
-
-
 def estimate_next_pos(measurement, OTHER = None):
     """Estimate the next (x, y) position of the wandering Traxbot
     based on noisy (x, y) measurements."""
-    global X
-    global P
-
     # You must return xy_estimate (x, y), and OTHER (even if it is None) 
     # in this order for grading purposes.
     
     if OTHER == None:
         xy_estimate = measurement
-        OTHER = measurement
+        OTHER = [measurement]
     else :
-        Z = matrix([[measurement[0]], [measurement[1]]])
-        y = Z - (H * X)
-        S = H * P * H.transpose() + R 
-        K = P * H.transpose() * S.inverse()
-        X = X + (K * y)
-
-        P = (I - (K* H)) * P 
-
-        # prediction
-        X = (F * X) + u 
-        P = F * P * F.transpose()
-        X.show()
-              
-        dist = distance_between(measurement, OTHER)
-
-        x = X.value[0][0]
-        y = X.value[1][0]
         
-        delim = sqrt(x ** 2 + y ** 2)
-        x = x / delim * dist + measurement[0]
-        y = y / delim * dist + measurement[1]
-        
-        
-        xy_estimate = [x, y]
-        OTHER = measurement
+        if len(OTHER) > 1:
+            m = len(OTHER) - 1
+            v1 = [OTHER[m][0] - OTHER[m-1][0],  OTHER[m][1] - OTHER[m-1][1]]
+            v2 = [measurement[0] - OTHER[m][0], measurement[1] - OTHER[m][1]]
+            dist = distance_between(measurement, OTHER[m])
+            radian = btwAngle(v1, v2)
+            sn = sin(radian)
+            cs = cos(radian)
+
+            r = matrix([[cs, -sn], [sn, cs]])
+            X = matrix([[v2[0]], [v2[1]]])
+            X = r * X
+
+            x = X.value[0][0]
+            y = X.value[1][0]
+            v = unitVector([x, y])
+
+            xy_estimate = [ measurement[0] + v[0] * dist, measurement[1] + v[1] * dist ]
+        else:
+            xy_estimate = measurement
+        OTHER.append(measurement)
 
     return xy_estimate, OTHER 
 
@@ -141,8 +109,13 @@ def btwAngle(point1, point2):
     x2 = point2[0]
     y2 = point2[1]
 
-    return atan2(y2, x1) - atan2(y1, x1)
+    return acos( (x1 * x2 + y1 * y2) / (  sqrt(x1 ** 2 + y1 ** 2) * sqrt(x2 ** 2 + y2 ** 2) ))
 
+    #return atan2(y2, x1) - atan2(y1, x1)
+
+def unitVector(v):
+    delim =  sqrt(v[0] ** 2 + v[1] ** 2)
+    return [v[0] / delim, v[1] / delim]
 
 # A helper function you may find useful.
 def distance_between(point1, point2):
@@ -161,7 +134,7 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
     # if you haven't localized the target bot, make a guess about the next
     # position, then we move the bot and compare your guess to the true
     # next position. When you are close enough, we stop checking.
-    while not localized and ctr <= 30: 
+    while not localized and ctr <= 10: 
         ctr += 1
         measurement = target_bot.sense()
         position_guess, OTHER = estimate_next_pos_fcn(measurement, OTHER)
