@@ -110,22 +110,22 @@ class matrix:
         return res 
  
     def CholeskyInverse(self):
-    # Computes inverse of matrix given its Cholesky upper Triangular
-    # decomposition of matrix.
+	# Computes inverse of matrix given its Cholesky upper Triangular
+	# decomposition of matrix.
         # This code is based on http://adorio-research.org/wordpress/?p=4560
 
         res = matrix([[]])
         res.zero(self.dimx, self.dimx)
 
-    # Backward step for inverse.
+	# Backward step for inverse.
         for j in reversed(range(self.dimx)):
             tjj = self.value[j][j]
             S = sum([self.value[j][k]*res.value[j][k] for k in range(j+1, self.dimx)])
             res.value[j][j] = 1.0/ tjj**2 - S/ tjj
-        for i in reversed(range(j)):
+	    for i in reversed(range(j)):
                 res.value[j][i] = res.value[i][j] = -sum([self.value[i][k]*res.value[k][j] for k in range(i+1,self.dimx)])/self.value[i][i]
         return res
-    
+	
 
     def inverse(self):
         aux = self.Cholesky()
@@ -134,4 +134,3 @@ class matrix:
 
     def __repr__(self):
         return repr(self.value)
-

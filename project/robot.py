@@ -65,4 +65,3 @@ class robot:
         return '[%.5f, %.5f]'  % (self.x, self.y)
 
 
-
