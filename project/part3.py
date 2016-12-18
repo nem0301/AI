@@ -12,7 +12,7 @@
 #
 # Complete the next_move function. This function will give you access to 
 # the position and heading of your bot (the hunter); the most recent 
-# measurement received from the runaway bot (the target), the max distance
+
 # your bot can move in a given timestep, and another variable, called 
 # OTHER, which you can use to keep track of information.
 # 
@@ -46,7 +46,7 @@ def next_move(hunter_position, hunter_heading, target_measurement, max_distance,
     # must be as follows in order to be graded properly.
     mx = target_measurement[0]
     my = target_measurement[1]
-    if not OTHER:
+    if OTHER == None:
         OTHER = [[], []]
         x = 0.
         y = 0.
@@ -58,6 +58,8 @@ def next_move(hunter_position, hunter_heading, target_measurement, max_distance,
                     [0., 0., 1000., 0., 0.],
                     [0., 0., 0., 1000., 0.],
                     [0., 0., 0., 0., 1000.]])
+        
+        X = matrix([[x], [y], [dist], [cTheta], [dTheta]])
     else :
         x = OTHER[0].value[0][0]
         y = OTHER[0].value[1][0]
@@ -67,71 +69,74 @@ def next_move(hunter_position, hunter_heading, target_measurement, max_distance,
         P = OTHER[1]
 
 
-    X = matrix([[x], [y], [dist], [cTheta], [dTheta]])
+        X = matrix([[x], [y], [dist], [cTheta], [dTheta]])
 
-    u = matrix([[0.], [0.], [0.], [0.], [0.]])
+        u = matrix([[0.], [0.], [0.], [0.], [0.]])
 
-    H = matrix([[1., 0., 0., 0., 0.],
-                [0., 1., 0., 0., 0.]])
-
-
-    R = matrix([[measurement_noise, 0.],
-                [0., measurement_noise]])
-    
-
-    I = matrix([[]])
-    I.identity(5)
+        H = matrix([[1., 0., 0., 0., 0.],
+                    [0., 1., 0., 0., 0.]])
 
 
-    Z = matrix([[mx, my]])
-    y = Z.transpose() - (H * X)
-    S = H * P * H.transpose() + R 
-    K = P * H.transpose() * S.inverse()
-    X = X + (K * y)
-    P = (I - (K * H)) * P 
-    
-    x = X.value[0][0]
-    y = X.value[1][0]
-    dist = X.value[2][0]
-    cTheta = X.value[3][0]
-    dTheta = X.value[4][0]
+
+        R = matrix([[measurement_noise, 0.],
+                    [0., measurement_noise]])
+
+
+        I = matrix([[]])
+        I.identity(5)
+
+
+        Z = matrix([[mx, my]])
+        y = Z.transpose() - (H * X)
+        S = H * P * H.transpose() + R 
+        K = P * H.transpose() * S.inverse()
+        X = X + (K * y)
+        P = (I - K * H) * P 
+        
+        x = X.value[0][0]
+        y = X.value[1][0]
+        dist = X.value[2][0]
+        cTheta = X.value[3][0]
+        dTheta = X.value[4][0]
+
+        if P.value[3][3] > 1000.:
+            cTheta = get_heading([x, y], [mx, my])
 
 #------------------------------------------------------------------------
-    dt = 1.
-    theta = cTheta + dTheta
-    F = matrix([[1., 0., cos(theta), -dist * sin(theta), -dist * sin(theta)],
-                [0., 1., sin(theta),  dist * cos(theta),  dist * cos(theta)],
-                [0., 0., 1., 0., 0.],
-                [0., 0., 0., 1., dt],
-                [0., 0., 0., 0., 1.]])
+        dt = 1.
+        theta = cTheta + dTheta
+        F = matrix([[1., 0., cos(theta), -dist * sin(theta), -dist * sin(theta)],
+                    [0., 1., sin(theta),  dist * cos(theta),  dist * cos(theta)],
+                    [0., 0., 1., 0., 0.],
+                    [0., 0., 0., 1., dt],
+                    [0., 0., 0., 0., 1.]])
 
-    X = matrix([[x + dist * cos(theta)],
-                [y + dist * sin(theta)],
-                [dist],
-                [theta],
-                [dTheta]])
+        X = matrix([[x + dist * cos(theta)],
+                    [y + dist * sin(theta)],
+                    [dist],
+                    [theta],
+                    [dTheta]])
 
-    P = F * P * F.transpose()
+        P = F * P * F.transpose()
     
     
 #------------------------------------------------------------------------
+    
+    #P.show()
 
     OTHER[0] = X
     OTHER[1] = P
 
     xy_estimate = (X.value[0][0], X.value[1][0] )
 #------------------------------------------------------------------------
-    
-    #max_distance
-    #hunter_heading
-    #hunter_position
 
     distance = distance_between(xy_estimate, hunter_position)
-
-
     
+    turning = get_heading(hunter_position, xy_estimate) - hunter_heading
+    #print dist
 
     return turning, distance, OTHER
+
 
 def distance_between(point1, point2):
     """Computes distance between point1 and point2. Points are (x, y) pairs."""
@@ -147,6 +152,14 @@ def demo_grading(hunter_bot, target_bot, next_move_fcn, OTHER = None):
     separation_tolerance = 0.02 * target_bot.distance # hunter must be within 0.02 step size to catch target
     caught = False
     ctr = 0
+    
+#    print hunter_bot
+#    print hunter_bot.heading
+#    print hunter_bot.turning
+#    print target_bot
+#    print target_bot.heading
+#    print target_bot.turning
+#    
 
     # We will use your next_move_fcn until we catch the target or time expires.
     while not caught and ctr < 1000:
@@ -178,6 +191,7 @@ def demo_grading(hunter_bot, target_bot, next_move_fcn, OTHER = None):
         ctr += 1            
         if ctr >= 1000:
             print "It took too many steps to catch the target."
+
     return caught
 
 def angle_trunc(a):
@@ -298,12 +312,18 @@ def demo_grading_gui(hunter_bot, target_bot, next_move_fcn, OTHER = None):
     return caught
 
 target = robot(0.0, 10.0, 0.0, 2*pi / 30, 1.5)
+#target = robot(-7.30476, 20.05414, -2.09439510239, 0.209439510239)
 measurement_noise = .05*target.distance
 target.set_noise(0.0, 0.0, measurement_noise)
 
-hunter = robot(-10.0, -10.0, 0.0)
+hunter = robot(-10.0, -10.0, 0.0)#
+#hunter = robot(-6.48842, 21.30543, -0.836832422785, 0.628318530718)
 
-print demo_grading_gui(hunter, target, next_move)
+
+for i in range (10):
+    print demo_grading(hunter, target, next_move)
+#print demo_grading_gui(hunter, target, next_move)
+#print demo_grading_gui(hunter, target, next_move)
 
 
 
